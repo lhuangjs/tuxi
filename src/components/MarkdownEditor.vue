@@ -1,7 +1,16 @@
 <template>
-  <div class="markdown">
-    <textarea class="editor" v-model="markdownText"></textarea>
-  </div>
+  <v-card>
+    <v-toolbar>
+      <v-btn icon>
+        <v-icon>mdi-eye</v-icon>
+      </v-btn>
+    </v-toolbar>
+    <v-card-text>
+      <div class="markdown">
+        <textarea class="editor" v-model="markdownText"></textarea>
+      </div>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>
@@ -36,7 +45,7 @@ export default {
 
   .editor {
     width: 100%;
-    height: 100%;
+    height: 1000px;
     font-size: 18px;
   }
 </style>

@@ -19,18 +19,20 @@
   </div>
 </template>
 <script>
-  export default {
-    name: 'App',
+export default {
+  name: 'App',
 
-    data () {
-      return {
-        menuItems: ['笔记', '问题面板', '计划'],
-        menuRouters: ['/', '/problems', '/plans']
-      }
+  data () {
+    return {
+      menuItems: ['笔记', '问题面板', '计划'],
+      menuRouters: ['/', '/problems', '/plans']
     }
   }
+}
 </script>
 <style>
-
+ *{
+   margin: 0;
+   padding: 0;
+ }
 </style>
-

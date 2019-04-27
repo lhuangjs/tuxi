@@ -1,21 +1,21 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
-    <v-treeview
-      v-model="tree"
-      :open="open"
-      :items="items"
-      activatable
-      item-key="name"
-      open-on-click
-    >
-      <template v-slot:prepend="{ item, open }">
-        <v-icon v-if="!item.file">
-          {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-        </v-icon>
-        <v-icon v-else>
-          {{ files[item.file] }}
-        </v-icon>
-      </template>
-    </v-treeview>
+  <v-treeview
+    v-model="tree"
+    :open="open"
+    :items="items"
+    activatable
+    item-key="name"
+    open-on-click
+  >
+    <template v-slot:prepend="{ item, open }">
+      <v-icon v-if="!item.file">
+        {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+      </v-icon>
+      <v-icon v-else>
+        {{ files[item.file] }}
+      </v-icon>
+    </template>
+  </v-treeview>
 </template>
 
 <script>
@@ -23,7 +23,7 @@ export default {
   name: 'DirectoryTree',
   data () {
     return {
-      open: ['public'],
+      open: ['projects', 'vue', 'vuetify', 'layout'],
       files: {
         html: 'mdi-language-html5',
         js: 'mdi-nodejs',
@@ -35,57 +35,38 @@ export default {
         xls: 'mdi-file-excel'
       },
       tree: [],
-      items: [
-        {
-          name: '.git'
-        },
-        {
-          name: 'node_modules'
-        },
-        {
-          name: 'public',
-          children: [
-            {
-              name: 'static',
-              children: [{
-                name: 'logo.png',
-                file: 'png'
-              }]
-            },
-            {
-              name: 'favicon.ico',
-              file: 'png'
-            },
-            {
-              name: 'index.html',
-              file: 'html'
-            }
-          ]
-        },
-        {
-          name: '.gitignore',
-          file: 'txt'
-        },
-        {
-          name: 'babel.config.js',
-          file: 'js'
-        },
-        {
-          name: 'package.json',
-          file: 'json'
-        },
-        {
-          name: 'README.md',
-          file: 'md'
-        },
-        {
-          name: 'vue.config.js',
-          file: 'js'
-        },
-        {
-          name: 'yarn.lock',
-          file: 'txt'
-        }
+      items: [{
+        name: 'projects',
+        children: [
+          {
+            name: 'java',
+            children: [
+              {
+                name: 'java8 stream.md', file: 'md'
+              }
+            ]
+          },
+          {
+            name: 'vue',
+            children: [
+              {
+                name: 'vuetify',
+                children: [
+                  { name: 'install.md', file: 'md' },
+                  {
+                    'name': 'layout',
+                    children: [
+                      { name: 'layout-1.md', file: 'md' },
+                      { name: 'layout-2.md', file: 'md' }
+                    ]
+                  }
+                ]
+              },
+              { name: 'documents.md', file: 'md' }
+            ]
+          }
+        ]
+      }
       ]
     }
   }
