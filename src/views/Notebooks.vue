@@ -2,12 +2,8 @@
   <v-container fill-height ma-0 pa-0 fluid>
     <v-layout row>
       <!--1. directory tree-->
-      <v-flex md2 v-if="!openPreview">
-        <v-card class="dir-card">
-          <div class="directory-tree">
-            <DirectoryTree></DirectoryTree>
-          </div>
-        </v-card>
+      <v-flex md2 class="pa-2 elevation-2 directory-tree" v-if="!openPreview">
+        <DirectoryTree></DirectoryTree>
       </v-flex>
       <!--2. editor-->
       <v-flex v-bind:class="[openPreview ? 'md6' : 'md10']">
@@ -27,16 +23,14 @@
               </v-toolbar>
             </v-flex>
             <v-flex d-flex grow>
-              <v-card>
-                <textarea class="editor" v-model="markdownContext"></textarea>
-              </v-card>
+              <MDEditor @md-context-change="changeMDContext"></MDEditor>
             </v-flex>
           </v-layout>
         </v-container>
       </v-flex>
       <!--markdown previewer-->
       <v-flex md6 v-if="openPreview">
-        <div class="previewer" v-html="htmlContext"></div>
+        <MDPreviewer :context="htmlContext" class="md-previewer"></MDPreviewer>
       </v-flex>
     </v-layout>
   </v-container>
@@ -44,17 +38,17 @@
 
 <script>
 import DirectoryTree from '@/components/DirectoryTree.vue'
-import MarkdownIt from 'markdown-it'
+import MDEditor from '@/components/MDEditor.vue'
+import MDPreviewer from '@/components/MDPreviewer.vue'
 
 export default {
 
   name: 'Notebooks',
 
-  components: { DirectoryTree },
+  components: { DirectoryTree, MDEditor, MDPreviewer },
 
   data () {
     return {
-      md: new MarkdownIt(),
       filename: this.getDate(),
       markdownContext: null,
       htmlContext: null,
@@ -78,6 +72,10 @@ export default {
        */
     switchPreview: function () {
       this.openPreview = !this.openPreview
+    },
+
+    changeMDContext: function (ctx) {
+      this.markdownContext = ctx
     }
   },
 
@@ -100,35 +98,15 @@ export default {
 
 <style scoped>
 
-  .dir-card {
-    height: 100%;
-    padding: 10px;
-  }
-
   .directory-tree {
-    height: 100%;
-    overflow-x: auto;
+    overflow: auto;
   }
 
   .editor-title >>> input {
     padding: 0 20px 10px 20px;
   }
 
-  .editor {
-    width: 100%;
-    height: 100%;
-    padding: 40px 40px 80px 40px;
-    font-size: 16px;
-    line-height: 1.75;
-    outline: none;
-  }
-
-  .previewer {
+  .md-previewer{
     background-color: #fcfaf2;
-    padding: 40px 40px 80px 40px;
-    overflow-y: auto;
-    line-height: 1.75;
-    font-size: 16px;
-    height: 100%;
   }
 </style>

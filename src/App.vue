@@ -25,7 +25,7 @@ export default {
   data () {
     return {
       menuItems: ['笔记', '问题面板', '计划'],
-      menuRouters: ['/', '/problems', '/plans']
+      menuRouters: ['/', '/Issues', '/plans']
     }
   }
 }

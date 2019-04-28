@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Notebooks from './views/Notebooks.vue'
-import Problems from './views/Problems.vue'
+import Issues from './views/Issues.vue'
 import Plans from './views/Plans.vue'
 
 Vue.use(Router)
@@ -14,9 +14,9 @@ export default new Router({
       component: Notebooks
     },
     {
-      path: '/problems',
-      name: 'problems',
-      component: Problems
+      path: '/issues',
+      name: 'issues',
+      component: Issues
     },
     {
       path: '/plans',
