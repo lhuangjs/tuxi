@@ -2,7 +2,7 @@
   <v-container fill-height ma-0 pa-0 fluid>
     <v-layout row>
       <!--1. directory tree-->
-      <v-flex sm2 v-if="!openPreview">
+      <v-flex md2 v-if="!openPreview">
         <v-card class="dir-card">
           <div class="directory-tree">
             <DirectoryTree></DirectoryTree>
@@ -10,12 +10,12 @@
         </v-card>
       </v-flex>
       <!--2. editor-->
-      <v-flex sm10>
+      <v-flex v-bind:class="[openPreview ? 'md6' : 'md10']">
         <v-container fluid fill-height ma-0 pa-0>
           <v-layout column>
             <!--title-->
             <v-flex shrink>
-              <v-text-field hide-details></v-text-field>
+              <v-text-field v-model="filename" hide-details class="headline editor-title"></v-text-field>
             </v-flex>
             <!--toolbar-->
             <v-flex shrink>
@@ -26,7 +26,7 @@
                 </v-btn>
               </v-toolbar>
             </v-flex>
-            <v-flex md10 d-flex grow>
+            <v-flex d-flex grow>
               <v-card>
                 <textarea class="editor" v-model="markdownContext"></textarea>
               </v-card>
@@ -35,7 +35,7 @@
         </v-container>
       </v-flex>
       <!--markdown previewer-->
-      <v-flex sm6 v-if="openPreview">
+      <v-flex md6 v-if="openPreview">
         <div class="previewer" v-html="htmlContext"></div>
       </v-flex>
     </v-layout>
@@ -43,49 +43,59 @@
 </template>
 
 <script>
-  import DirectoryTree from '@/components/DirectoryTree.vue'
-  import MarkdownIt from 'markdown-it'
+import DirectoryTree from '@/components/DirectoryTree.vue'
+import MarkdownIt from 'markdown-it'
 
-  export default {
+export default {
 
-    name: 'Notebooks',
+  name: 'Notebooks',
 
-    components: { DirectoryTree },
+  components: { DirectoryTree },
 
-    data () {
-      return {
-        md: new MarkdownIt(),
-        markdownContext: null,
-        htmlContext: null,
-        openPreview: false
-      }
+  data () {
+    return {
+      md: new MarkdownIt(),
+      filename: this.getDate(),
+      markdownContext: null,
+      htmlContext: null,
+      openPreview: false
+    }
+  },
+
+  methods: {
+
+    /**
+       * Make date formatted as title
+       */
+    getDate: function () {
+      const date = new Date()
+      return [date.getFullYear(), date.getMonth(), date.getDate(),
+        date.getHours(), date.getMinutes(), date.getSeconds()].join('-')
     },
 
-    methods: {
-
-      /**
+    /**
        * Open or close markdown preview
        */
-      switchPreview: function () {
-        this.openPreview = !this.openPreview
+    switchPreview: function () {
+      this.openPreview = !this.openPreview
+    }
+  },
+
+  watch: {
+    openPreview: function (val) {
+      if (val === true) {
+        this.htmlContext = this.md.render(this.markdownContext)
       }
     },
 
-    watch: {
-      openPreview: function (val) {
-        if (val === true) {
-          this.htmlContext = this.md.render(this.markdownContext)
-        }
-      },
-
-      markdownContext: function (val) {
-        console.log(val)
-        if (this.openPreview) {
-          this.htmlContext = this.md.render(this.markdownContext)
-        }
+    markdownContext: function (val) {
+      console.log(val)
+      if (this.openPreview) {
+        this.htmlContext = this.md.render(this.markdownContext)
       }
     }
   }
+}
 </script>
 
 <style scoped>
@@ -100,11 +110,17 @@
     overflow-x: auto;
   }
 
+  .editor-title >>> input {
+    padding: 0 20px 10px 20px;
+  }
+
   .editor {
     width: 100%;
     height: 100%;
+    padding: 40px 40px 80px 40px;
     font-size: 16px;
     line-height: 1.75;
+    outline: none;
   }
 
   .previewer {
