@@ -1,6 +1,8 @@
 <template>
   <div class="editor">
-    <textarea v-model="markdownContext"></textarea>
+    <textarea
+      :value="value"
+      @input="$emit('input', $event.target.value)"></textarea>
   </div>
 </template>
 
@@ -9,13 +11,7 @@ export default {
 
   name: 'MDEditor',
 
-  props: ['markdownContext'],
-
-  watch: {
-    markdownContext: function () {
-      this.$emit('md-context-change', this.markdownContext)
-    }
-  }
+  props: ['value']
 }
 </script>
 

@@ -23,7 +23,7 @@
               </v-toolbar>
             </v-flex>
             <v-flex d-flex grow>
-              <MDEditor @md-context-change="changeMDContext"></MDEditor>
+              <MDEditor v-model="markdownContext"></MDEditor>
             </v-flex>
           </v-layout>
         </v-container>
@@ -50,7 +50,7 @@ export default {
   data () {
     return {
       filename: this.getDate(),
-      markdownContext: null,
+      markdownContext: '',
       htmlContext: null,
       openPreview: false
     }
@@ -72,10 +72,6 @@ export default {
        */
     switchPreview: function () {
       this.openPreview = !this.openPreview
-    },
-
-    changeMDContext: function (ctx) {
-      this.markdownContext = ctx
     }
   },
 

@@ -1,4 +1,4 @@
-<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<template>
   <v-container fluid fill-height class="ma-0 pa-0">
     <v-layout row>
       <!--1. navigation-->
@@ -8,13 +8,13 @@
         >
           <v-list>
             <v-list-tile
-              v-for="tag in tags"
+              v-for="tag in allTags"
               :key="tag"
               @click="getIssuesByTag(tag)"
               :class="[activeTag === tag ? 'focused-tile' : '']"
             >
               <v-list-tile-action>
-                <v-icon>mdi-tag</v-icon>
+                <v-icon :color="activeTag === tag ? '#ea7659' : 'black'">mdi-tag</v-icon>
               </v-list-tile-action>
 
               <v-list-tile-content>
@@ -42,18 +42,27 @@
       </v-flex>
       <!--2. issues component-->
       <v-flex>
-        <v-layout row wrap>
-          <v-flex ma-3 v-for="issue in showedIssues" :key="issue.title">
-            <v-layout column>
-              <!--issue title-->
-              <v-flex shrink>
-                <v-text-field v-model="issue.title" hide-details class="headline issue-title"></v-text-field>
-              </v-flex>
-              <!--issue previewer-->
-              <v-flex class="elevation-2">
-                <div class="issue-previewer" @dblclick="openEditor(issue)">
-                  <MDPreviewer :context="md2html(issue.context)"></MDPreviewer>
-                </div>
+        <v-layout column>
+          <!--add issue-->
+          <v-flex ma-3>
+            <v-btn block color="info" class="elevation-6" @click="addIssue">添加 issue</v-btn>
+          </v-flex>
+          <!--issues preview-->
+          <v-flex>
+            <v-layout row wrap>
+              <v-flex class="elevation-5  ma-3" v-for="issue in selectedIssues" :key="issue.title">
+                <v-layout column>
+                  <!--issue title-->
+                  <v-flex shrink>
+                    <v-text-field v-model="issue.title" hide-details class="headline issue-title"></v-text-field>
+                  </v-flex>
+                  <!--issue previewer-->
+                  <v-flex class="elevation-2">
+                    <div class="issue-previewer" @dblclick="openEditor(issue)">
+                      <MDPreviewer :context="md2html(issue.context)"></MDPreviewer>
+                    </div>
+                  </v-flex>
+                </v-layout>
               </v-flex>
             </v-layout>
           </v-flex>
@@ -61,47 +70,30 @@
       </v-flex>
     </v-layout>
     <!--enter edit model when double click previewer-->
-    <v-dialog v-model="editing" v-if="editing" scrollable width="600px">
-      <v-card height="700px">
-        <v-card-text class="pa-0">
-          <v-layout column class="elevation-2">
-            <!--title-->
-            <v-flex shrink>
-              <v-text-field v-model="editingIssue.title" hide-details class="headline issue-title"></v-text-field>
-            </v-flex>
-            <!--editor-->
-            <v-flex class="elevation-2">
-              <MDEditor
-                class="issue-editor"
-                :markdownContext="editingIssue.context"
-                @md-context-change="changeMDContext"></MDEditor>
-            </v-flex>
-            <!--previewer-->
-            <v-flex>
-              <MDPreviewer :context="md2html(editingIssue.context)"></MDPreviewer>
-            </v-flex>
-          </v-layout>
-        </v-card-text>
-      </v-card>
+    <v-dialog v-model="editModel" width="800px">
+      <IssueEditor
+        :allTags="allTags"
+        :editingIssue="editingIssue"
+        v-if="editModel"
+      ></IssueEditor>
     </v-dialog>
   </v-container>
 </template>
 
 <script>
-import MDEditor from '@/components/MDEditor.vue'
 import MDPreviewer from '@/components/MDPreviewer.vue'
+import IssueEditor from '@/components/IssueEditor.vue'
 
 export default {
 
   name: 'Issues',
 
-  components: { MDEditor, MDPreviewer },
+  components: { IssueEditor, MDPreviewer },
 
-  computed: {
-    // all tags
-    tags: function () {
-      return this.getTags()
-    }
+  created () {
+    this.allTags = this.storage.get('allTags')
+    this.activaTag = this.allTags.length === 0 ? null : this.allTags[0]
+    this.selectedIssues = this.getIssuesByTag(this.activaTag)
   },
 
   data () {
@@ -109,72 +101,93 @@ export default {
       allIssues: [
         {
           title: 'java8 stream',
-          tag: 'Java',
+          tag: ['Java'],
           context: '# hello world!',
           date: '2018-10-18'
         },
         {
           title: 'Vuetify list',
-          tag: 'Vuetify',
+          tag: ['Vuetify'],
           context: '# Vuetify list point!',
           date: '2018-10-18'
         }
       ],
+      allTags: null,
+      // selected tag
       activeTag: null,
       // the issues that need to be displayed on the page
-      showedIssues: null,
+      selectedIssues: null,
       // enter issue edit model?
-      editing: false,
+      editModel: false,
       // the issue currently being editing
       editingIssue: null
-
     }
   },
 
   methods: {
 
-    getTags: function () {
-      return this.allIssues.map((issue) => issue.tag)
-    },
-
+    /**
+       * @param tag
+       */
     getIssuesByTag: function (tag) {
       this.activeTag = tag
-      this.showedIssues = this.allIssues.filter((issue) => issue.tag === tag)
+      this.selectedIssues = this.allIssues
+        .filter(issue => issue.tags.indexOf(tag) !== -1)
     },
 
-    md2html: function (mdCtx) {
-      return this.md.render(mdCtx)
-    },
-
+    /**
+       * Open issue editor
+       *
+       * @param issue
+       */
     openEditor: function (issue) {
       this.editingIssue = issue
-      this.editing = true
+      this.editModel = true
     },
 
-    changeMDContext: function (mdCtx) {
-      this.editingIssue.context = mdCtx
+    addIssue: function () {
+      let issue = {
+        title: '',
+        tags: [],
+        context: '',
+        date: new Date().getTime()
+      }
+      this.allIssues.push(issue)
+      this.storage.set('allIssues', this.allIssues)
+      this.openEditor(issue)
+    },
+
+    /**
+       * Convert markdown context to html context
+       * @param mdCtx
+       * @returns
+       */
+    md2html: function (mdCtx) {
+      return this.md.render(mdCtx)
+    }
+  },
+
+  watch: {
+    editingIssue: {
+      handler: function () {
+        this.storage.set('allIssues', this.allIssues)
+        console.log('all issues in storage')
+        console.log(this.storage.get('allIssues'))
+        console.log('all issues in var')
+        console.log(this.allIssues)
+      },
+      deep: true
     }
   }
 }
 </script>
 
 <style scoped>
-
-  /*clicked tag*/
   .focused-tile {
-    background-color: #dfdfdf;
+    background-color: #c8d9eb;
   }
 
   .issue-title >>> input {
     padding: 0 20px 10px 20px;
-  }
-
-  .issue-previewer {
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  .issue-editor {
-    height: 400px;
   }
 </style>
