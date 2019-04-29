@@ -1,6 +1,7 @@
-<template>
+<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-container fluid fill-height class="ma-0 pa-0">
     <v-layout row>
+      <!--1. navigation-->
       <v-flex md2>
         <v-navigation-drawer
           permanent
@@ -10,6 +11,7 @@
               v-for="tag in tags"
               :key="tag"
               @click="getIssuesByTag(tag)"
+              :class="[activeTag === tag ? 'focused-tile' : '']"
             >
               <v-list-tile-action>
                 <v-icon>mdi-tag</v-icon>
@@ -18,14 +20,31 @@
               <v-list-tile-content>
                 <v-list-tile-title>{{tag}}</v-list-tile-title>
               </v-list-tile-content>
+
+              <!--tag setting-->
+              <v-list-tile-action>
+                <v-layout row>
+                  <v-flex>
+                    <v-btn small icon color="primary">
+                      <v-icon>mdi-lead-pencil</v-icon>
+                    </v-btn>
+                  </v-flex>
+                  <v-flex>
+                    <v-btn small icon color="error">
+                      <v-icon>mdi-delete-forever</v-icon>
+                    </v-btn>
+                  </v-flex>
+                </v-layout>
+              </v-list-tile-action>
             </v-list-tile>
           </v-list>
         </v-navigation-drawer>
       </v-flex>
+      <!--2. issues component-->
       <v-flex>
         <v-layout row wrap>
-          <v-flex ma-3 v-for="issue in issues" :key="issue.title">
-            <v-layout column class="mx-2 elevation-2">
+          <v-flex ma-3 v-for="issue in showedIssues" :key="issue.title">
+            <v-layout column>
               <!--issue title-->
               <v-flex shrink>
                 <v-text-field v-model="issue.title" hide-details class="headline issue-title"></v-text-field>
@@ -42,8 +61,8 @@
       </v-flex>
     </v-layout>
     <!--enter edit model when double click previewer-->
-    <v-dialog v-model="editing" v-if="editing"  scrollable width="600px">
-      <v-card  height="700px" >
+    <v-dialog v-model="editing" v-if="editing" scrollable width="600px">
+      <v-card height="700px">
         <v-card-text class="pa-0">
           <v-layout column class="elevation-2">
             <!--title-->
@@ -78,9 +97,16 @@ export default {
 
   components: { MDEditor, MDPreviewer },
 
+  computed: {
+    // all tags
+    tags: function () {
+      return this.getTags()
+    }
+  },
+
   data () {
     return {
-      issues: [
+      allIssues: [
         {
           title: 'java8 stream',
           tag: 'Java',
@@ -94,8 +120,9 @@ export default {
           date: '2018-10-18'
         }
       ],
-      // all tags
-      tags: this.getTags(),
+      activeTag: null,
+      // the issues that need to be displayed on the page
+      showedIssues: null,
       // enter issue edit model?
       editing: false,
       // the issue currently being editing
@@ -107,11 +134,12 @@ export default {
   methods: {
 
     getTags: function () {
-      return ['java', 'vue']
+      return this.allIssues.map((issue) => issue.tag)
     },
 
     getIssuesByTag: function (tag) {
-
+      this.activeTag = tag
+      this.showedIssues = this.allIssues.filter((issue) => issue.tag === tag)
     },
 
     md2html: function (mdCtx) {
@@ -119,7 +147,6 @@ export default {
     },
 
     openEditor: function (issue) {
-      console.log(issue)
       this.editingIssue = issue
       this.editing = true
     },
@@ -132,6 +159,12 @@ export default {
 </script>
 
 <style scoped>
+
+  /*clicked tag*/
+  .focused-tile {
+    background-color: #dfdfdf;
+  }
+
   .issue-title >>> input {
     padding: 0 20px 10px 20px;
   }
@@ -141,7 +174,7 @@ export default {
     overflow-y: auto;
   }
 
-  .issue-editor{
+  .issue-editor {
     height: 400px;
   }
 </style>

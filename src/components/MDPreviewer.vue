@@ -14,7 +14,7 @@ export default {
 
 <style scoped>
   .previewer {
-    padding: 40px 40px 80px 40px;
+    padding: 20px;
     overflow-y: auto;
     line-height: 1.75;
     font-size: 16px;
