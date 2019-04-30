@@ -18,10 +18,14 @@
                 </template>
                 <template v-slot:default>
                   <v-list>
+                    <v-list-tile>
+                      <v-list-tile-content>
+                        <v-text-field v-model="newTag" @keyup.native.enter="addTag"></v-text-field>
+                      </v-list-tile-content>
+                    </v-list-tile>
                     <v-list-tile v-for="tag in allTags" :key="tag">
                       <v-list-tile-content>
-                        <v-list-tile-title>{{tag}}</v-list-tile-title>
-                        <v-checkbox v-model="editingIssue.tags" :label="tag"></v-checkbox>
+                        <v-checkbox v-model="editingIssue.tags" :label="tag" :value="tag"></v-checkbox>
                       </v-list-tile-content>
                     </v-list-tile>
                   </v-list>
@@ -29,6 +33,16 @@
               </v-menu>
             </template>
           </v-text-field>
+        </v-flex>
+        <v-flex class="elevation-1">
+          <v-chip v-for="tag in editingIssue.tags" :key="tag"
+                  class="ml-2"
+                  small
+                  color="green" text-color="white"
+          >
+            <v-avatar class="green darken-4">{{tag[0].toUpperCase()}}</v-avatar>
+            {{tag}}
+          </v-chip>
         </v-flex>
         <!--editor-->
         <v-flex class="elevation-2">
@@ -61,7 +75,9 @@ export default {
   props: ['allTags', 'editingIssue'],
 
   data () {
-    return {}
+    return {
+      newTag: null
+    }
   },
 
   methods: {
@@ -73,6 +89,10 @@ export default {
        */
     md2html: function (mdCtx) {
       return this.md.render(mdCtx)
+    },
+
+    addTag: function () {
+      this.$emit('add-new-tag', this.newTag)
     }
   }
 }

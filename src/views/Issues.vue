@@ -2,35 +2,52 @@
   <v-container fluid fill-height class="ma-0 pa-0">
     <v-layout row>
       <!--1. navigation-->
-      <v-flex md2>
+      <v-flex md3>
         <v-navigation-drawer
           permanent
         >
           <v-list>
-            <v-list-tile
-              v-for="tag in allTags"
-              :key="tag"
-              @click="getIssuesByTag(tag)"
-              :class="[activeTag === tag ? 'focused-tile' : '']"
-            >
+            <!--add tag-->
+            <v-list-tile>
               <v-list-tile-action>
-                <v-icon :color="activeTag === tag ? '#ea7659' : 'black'">mdi-tag</v-icon>
+                <v-icon>mdi-tag-plus</v-icon>
               </v-list-tile-action>
-
               <v-list-tile-content>
-                <v-list-tile-title>{{tag}}</v-list-tile-title>
+                <v-text-field
+                  v-model="addedTag"
+                  @keyup.native.enter="addTag"></v-text-field>
               </v-list-tile-content>
-
+            </v-list-tile>
+            <!--show tags-->
+            <v-list-tile
+              v-for="(tag, index) in allTags" :key="tag.name"
+              @click="focusOnTag(tag)"
+              :style="{backgroundColor: activeTag === tag ? 'focused-tile' : ''}"
+            >
+              <!--pre-icon-->
+              <v-list-tile-action>
+                <v-icon :color="activeTag === tag ? '#ea7659' : ''">mdi-tag</v-icon>
+              </v-list-tile-action>
+              <!--text field-->
+              <v-list-tile-content>
+                <v-text-field v-if="modifiedTagIndex=== index"
+                              :value="tag"
+                              @input="modifyTagContext"
+                              @keyup.native.enter="submitModifiedTag"
+                >
+                </v-text-field>
+                <v-list-tile-title v-else>{{tag}}</v-list-tile-title>
+              </v-list-tile-content>
               <!--tag setting-->
               <v-list-tile-action>
                 <v-layout row>
                   <v-flex>
-                    <v-btn small icon color="primary">
+                    <v-btn small icon color="primary" @click="modifyTag(index)">
                       <v-icon>mdi-lead-pencil</v-icon>
                     </v-btn>
                   </v-flex>
                   <v-flex>
-                    <v-btn small icon color="error">
+                    <v-btn small icon color="error" @click="delTag">
                       <v-icon>mdi-delete-forever</v-icon>
                     </v-btn>
                   </v-flex>
@@ -50,20 +67,32 @@
           <!--issues preview-->
           <v-flex>
             <v-layout row wrap>
-              <v-flex class="elevation-5  ma-3" v-for="issue in selectedIssues" :key="issue.title">
+              <!--a preview container-->
+              <v-layout class="elevation-5  ma-3" v-for="issue in selectedIssues" :key="issue.title">
                 <v-layout column>
                   <!--issue title-->
                   <v-flex shrink>
-                    <v-text-field v-model="issue.title" hide-details class="headline issue-title"></v-text-field>
+                    <div class="headline elevation-1 issue-title">{{issue.title}}</div>
+                  </v-flex>
+                  <!--tag-->
+                  <v-flex class="elevation-1">
+                    <v-chip v-for="tag in issue.tags" :key="tag"
+                            class="ml-2"
+                            small
+                            color="green" text-color="white"
+                    >
+                      <v-avatar class="green darken-4">{{tag[0].toUpperCase()}}</v-avatar>
+                      {{tag}}
+                    </v-chip>
                   </v-flex>
                   <!--issue previewer-->
                   <v-flex class="elevation-2">
                     <div class="issue-previewer" @dblclick="openEditor(issue)">
-                      <MDPreviewer :context="md2html(issue.context)"></MDPreviewer>
+                      <MDPreviewer :context="md2html(issue.context)" class="previewer"></MDPreviewer>
                     </div>
                   </v-flex>
                 </v-layout>
-              </v-flex>
+              </v-layout>
             </v-layout>
           </v-flex>
         </v-layout>
@@ -74,6 +103,7 @@
       <IssueEditor
         :allTags="allTags"
         :editingIssue="editingIssue"
+        @add-new-tag="addTagFromEditor"
         v-if="editModel"
       ></IssueEditor>
     </v-dialog>
@@ -81,105 +111,155 @@
 </template>
 
 <script>
-import MDPreviewer from '@/components/MDPreviewer.vue'
-import IssueEditor from '@/components/IssueEditor.vue'
+  import MDPreviewer from '@/components/MDPreviewer.vue'
+  import IssueEditor from '@/components/IssueEditor.vue'
 
-export default {
+  export default {
 
-  name: 'Issues',
+    name: 'Issues',
 
-  components: { IssueEditor, MDPreviewer },
+    components: { IssueEditor, MDPreviewer },
 
-  created () {
-    this.allTags = this.storage.get('allTags')
-    this.activaTag = this.allTags.length === 0 ? null : this.allTags[0]
-    this.selectedIssues = this.getIssuesByTag(this.activaTag)
-  },
-
-  data () {
-    return {
-      allIssues: [
-        {
-          title: 'java8 stream',
-          tag: ['Java'],
-          context: '# hello world!',
-          date: '2018-10-18'
-        },
-        {
-          title: 'Vuetify list',
-          tag: ['Vuetify'],
-          context: '# Vuetify list point!',
-          date: '2018-10-18'
-        }
-      ],
-      allTags: null,
-      // selected tag
-      activeTag: null,
-      // the issues that need to be displayed on the page
-      selectedIssues: null,
-      // enter issue edit model?
-      editModel: false,
-      // the issue currently being editing
-      editingIssue: null
-    }
-  },
-
-  methods: {
-
-    /**
-       * @param tag
-       */
-    getIssuesByTag: function (tag) {
-      this.activeTag = tag
-      this.selectedIssues = this.allIssues
-        .filter(issue => issue.tags.indexOf(tag) !== -1)
+    created () {
+      this.allTags = this.storage.get('allTags')
+      this.allIssues = this.storage.get('allIssues')
+      if (this.allTags.length !== 0) {
+        this.focusOnTag(this.allTags[0])
+      }
     },
 
-    /**
+    computed: {},
+
+    data () {
+      return {
+        allIssues: null,
+        allTags: null,
+        // to save tag that will be added
+        addedTag: null,
+        // the index of tag that is being modified
+        modifiedTagIndex: null,
+        // selected tag
+        activeTag: null,
+        // the issues that need to be displayed on the page
+        selectedIssues: null,
+        // enter issue edit model?
+        editModel: false,
+        // the issue currently being editing
+        editingIssue: null
+      }
+    },
+
+    methods: {
+
+      /**
+       * @param tag
+       */
+      focusOnTag: function (tag) {
+        this.activeTag = tag
+        this.selectedIssues = this.allIssues
+          .filter(issue => issue.tags.indexOf(tag) !== -1)
+      },
+
+      /**
+       * Add tag into all tags array when the enter key is pressed
+       */
+      addTag: function () {
+        if (this.allTags.indexOf(this.addedTag) === -1) {
+          this.allTags.push(this.addedTag)
+          this.addedTag = null
+        }
+      },
+
+      /**
+       * Add tag from issue editor into all tags array when the enter key is pressed
+       */
+      addTagFromEditor: function (newTag) {
+        if (this.allTags.indexOf(newTag) === -1) {
+          this.allTags.push(newTag)
+        }
+      },
+
+      /**
+       * Display text field
+       */
+      modifyTag: function (index) {
+        this.modifiedTagIndex = index
+      },
+
+      modifyTagContext: function (value) {
+        this.allTags[this.modifiedTagIndex] = value
+      },
+
+      /**
+       * Add modified tag into all tags array when the enter key is pressed
+       */
+      submitModifiedTag: function () {
+        // make the observer can listen the change of array
+        let value = this.allTags[this.modifiedTagIndex]
+        this.allTags.splice(this.modifiedTagIndex, 1, value)
+        this.modifiedTagIndex = null
+      },
+
+      delTag: function () {
+        let index = this.allTags.indexOf(this.activeTag)
+        this.allTags.splice(index, 1)
+      },
+
+      /**
        * Open issue editor
        *
        * @param issue
        */
-    openEditor: function (issue) {
-      this.editingIssue = issue
-      this.editModel = true
-    },
+      openEditor: function (issue) {
+        this.editingIssue = issue
+        this.editModel = true
+      },
 
-    addIssue: function () {
-      let issue = {
-        title: '',
-        tags: [],
-        context: '',
-        date: new Date().getTime()
-      }
-      this.allIssues.push(issue)
-      this.storage.set('allIssues', this.allIssues)
-      this.openEditor(issue)
-    },
+      addIssue: function () {
+        let issue = {
+          title: '',
+          tags: [],
+          context: '',
+          date: new Date().getTime()
+        }
+        this.allIssues.push(issue)
+        this.openEditor(issue)
+      },
 
-    /**
+      /**
        * Convert markdown context to html context
        * @param mdCtx
        * @returns
        */
-    md2html: function (mdCtx) {
-      return this.md.render(mdCtx)
-    }
-  },
+      md2html: function (mdCtx) {
+        return this.md.render(mdCtx)
+      }
+    },
 
-  watch: {
-    editingIssue: {
-      handler: function () {
-        this.storage.set('allIssues', this.allIssues)
-        console.log('all issues in storage')
-        console.log(this.storage.get('allIssues'))
-        console.log('all issues in var')
-        console.log(this.allIssues)
+    watch: {
+      allTags: {
+        handler: function (val, oldVal) {
+          console.log('new tags')
+          console.log(val)
+          console.log('old tags')
+          console.log(oldVal)
+          this.storage.set('allTags', this.allTags)
+        },
+        deep: true
       },
-      deep: true
+
+      allIssues: {
+        handler: function (val, oldVal) {
+          console.log('new issues')
+          console.log(val)
+          console.log('old issues')
+          console.log(oldVal)
+          this.storage.set('allIssues', this.allIssues)
+        },
+        deep: true
+      }
     }
   }
-}
 </script>
 
 <style scoped>
@@ -187,7 +267,12 @@ export default {
     background-color: #c8d9eb;
   }
 
-  .issue-title >>> input {
-    padding: 0 20px 10px 20px;
+  .issue-title {
+    padding: 10px 10px 10px 20px;
+  }
+
+  .previewer {
+    height: 200px;
+    width: 400px;
   }
 </style>
