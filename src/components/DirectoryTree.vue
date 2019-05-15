@@ -38,79 +38,79 @@
 </template>
 
 <script>
-  export default {
+export default {
 
-    name: 'DirectoryTree',
+  name: 'DirectoryTree',
 
-    data () {
-      return {
-        open: ['projects', 'vue', 'vuetify', 'layout'],
-        files: {
-          html: 'mdi-language-html5',
-          js: 'mdi-nodejs',
-          json: 'mdi-json',
-          md: 'mdi-markdown',
-          pdf: 'mdi-file-pdf',
-          png: 'mdi-file-image',
-          txt: 'mdi-file-document-outline',
-          xls: 'mdi-file-excel'
-        },
-        tree: [],
-        items: [{
-          name: 'projects',
-          children: [
-            {
-              name: 'java',
-              children: [
-                {
-                  name: 'java8 stream.md', file: 'md'
-                }
-              ]
-            },
-            {
-              name: 'vue',
-              children: [
-                {
-                  name: 'vuetify',
-                  children: [
-                    { name: 'install.md', file: 'md' },
-                    {
-                      'name': 'layout',
-                      children: [
-                        { name: 'layout-1.md', file: 'md' },
-                        { name: 'layout-2.md', file: 'md' }
-                      ]
-                    }
-                  ]
-                },
-                { name: 'documents.md', file: 'md' }
-              ]
-            }
-          ]
-        }
-        ],
-        showMenu: false,
-        menuItems: ['新建Markdown文档', '新建目录', '重命名', '删除']
+  data () {
+    return {
+      open: ['projects', 'vue', 'vuetify', 'layout'],
+      files: {
+        html: 'mdi-language-html5',
+        js: 'mdi-nodejs',
+        json: 'mdi-json',
+        md: 'mdi-markdown',
+        pdf: 'mdi-file-pdf',
+        png: 'mdi-file-image',
+        txt: 'mdi-file-document-outline',
+        xls: 'mdi-file-excel'
+      },
+      tree: [],
+      items: [{
+        name: 'projects',
+        children: [
+          {
+            name: 'java',
+            children: [
+              {
+                name: 'java8 stream.md', file: 'md'
+              }
+            ]
+          },
+          {
+            name: 'vue',
+            children: [
+              {
+                name: 'vuetify',
+                children: [
+                  { name: 'install.md', file: 'md' },
+                  {
+                    'name': 'layout',
+                    children: [
+                      { name: 'layout-1.md', file: 'md' },
+                      { name: 'layout-2.md', file: 'md' }
+                    ]
+                  }
+                ]
+              },
+              { name: 'documents.md', file: 'md' }
+            ]
+          }
+        ]
       }
+      ],
+      showMenu: false,
+      menuItems: ['新建Markdown文档', '新建目录', '重命名', '删除']
+    }
+  },
+
+  methods: {
+
+    show: function (on) {
+      console.log(on)
     },
 
-    methods: {
-
-      show: function (on) {
-        console.log(on)
-      },
-
-      /**
+    /**
        * Open menus when
        */
-      openMenus: function (e) {
-        // this.showMenu = true
-        console.log(this.tree)
-        console.log(e)
-        e.preventDefault()
-      }
+    openMenus: function (e) {
+      // this.showMenu = true
+      console.log(this.tree)
+      console.log(e)
+      e.preventDefault()
     }
   }
+}
 </script>
 
 <style scoped>

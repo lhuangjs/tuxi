@@ -111,155 +111,155 @@
 </template>
 
 <script>
-  import MDPreviewer from '@/components/MDPreviewer.vue'
-  import IssueEditor from '@/components/IssueEditor.vue'
+import MDPreviewer from '@/components/MDPreviewer.vue'
+import IssueEditor from '@/components/IssueEditor.vue'
 
-  export default {
+export default {
 
-    name: 'Issues',
+  name: 'Issues',
 
-    components: { IssueEditor, MDPreviewer },
+  components: { IssueEditor, MDPreviewer },
 
-    created () {
-      this.allTags = this.storage.get('allTags')
-      this.allIssues = this.storage.get('allIssues')
-      if (this.allTags.length !== 0) {
-        this.focusOnTag(this.allTags[0])
-      }
-    },
+  created () {
+    this.allTags = this.storage.get('allTags')
+    this.allIssues = this.storage.get('allIssues')
+    if (this.allTags.length !== 0) {
+      this.focusOnTag(this.allTags[0])
+    }
+  },
 
-    computed: {},
+  computed: {},
 
-    data () {
-      return {
-        allIssues: null,
-        allTags: null,
-        // to save tag that will be added
-        addedTag: null,
-        // the index of tag that is being modified
-        modifiedTagIndex: null,
-        // selected tag
-        activeTag: null,
-        // the issues that need to be displayed on the page
-        selectedIssues: null,
-        // enter issue edit model?
-        editModel: false,
-        // the issue currently being editing
-        editingIssue: null
-      }
-    },
+  data () {
+    return {
+      allIssues: null,
+      allTags: null,
+      // to save tag that will be added
+      addedTag: null,
+      // the index of tag that is being modified
+      modifiedTagIndex: null,
+      // selected tag
+      activeTag: null,
+      // the issues that need to be displayed on the page
+      selectedIssues: null,
+      // enter issue edit model?
+      editModel: false,
+      // the issue currently being editing
+      editingIssue: null
+    }
+  },
 
-    methods: {
+  methods: {
 
-      /**
+    /**
        * @param tag
        */
-      focusOnTag: function (tag) {
-        this.activeTag = tag
-        this.selectedIssues = this.allIssues
-          .filter(issue => issue.tags.indexOf(tag) !== -1)
-      },
+    focusOnTag: function (tag) {
+      this.activeTag = tag
+      this.selectedIssues = this.allIssues
+        .filter(issue => issue.tags.indexOf(tag) !== -1)
+    },
 
-      /**
+    /**
        * Add tag into all tags array when the enter key is pressed
        */
-      addTag: function () {
-        if (this.allTags.indexOf(this.addedTag) === -1) {
-          this.allTags.push(this.addedTag)
-          this.addedTag = null
-        }
-      },
+    addTag: function () {
+      if (this.allTags.indexOf(this.addedTag) === -1) {
+        this.allTags.push(this.addedTag)
+        this.addedTag = null
+      }
+    },
 
-      /**
+    /**
        * Add tag from issue editor into all tags array when the enter key is pressed
        */
-      addTagFromEditor: function (newTag) {
-        if (this.allTags.indexOf(newTag) === -1) {
-          this.allTags.push(newTag)
-        }
-      },
+    addTagFromEditor: function (newTag) {
+      if (this.allTags.indexOf(newTag) === -1) {
+        this.allTags.push(newTag)
+      }
+    },
 
-      /**
+    /**
        * Display text field
        */
-      modifyTag: function (index) {
-        this.modifiedTagIndex = index
-      },
+    modifyTag: function (index) {
+      this.modifiedTagIndex = index
+    },
 
-      modifyTagContext: function (value) {
-        this.allTags[this.modifiedTagIndex] = value
-      },
+    modifyTagContext: function (value) {
+      this.allTags[this.modifiedTagIndex] = value
+    },
 
-      /**
+    /**
        * Add modified tag into all tags array when the enter key is pressed
        */
-      submitModifiedTag: function () {
-        // make the observer can listen the change of array
-        let value = this.allTags[this.modifiedTagIndex]
-        this.allTags.splice(this.modifiedTagIndex, 1, value)
-        this.modifiedTagIndex = null
-      },
+    submitModifiedTag: function () {
+      // make the observer can listen the change of array
+      let value = this.allTags[this.modifiedTagIndex]
+      this.allTags.splice(this.modifiedTagIndex, 1, value)
+      this.modifiedTagIndex = null
+    },
 
-      delTag: function () {
-        let index = this.allTags.indexOf(this.activeTag)
-        this.allTags.splice(index, 1)
-      },
+    delTag: function () {
+      let index = this.allTags.indexOf(this.activeTag)
+      this.allTags.splice(index, 1)
+    },
 
-      /**
+    /**
        * Open issue editor
        *
        * @param issue
        */
-      openEditor: function (issue) {
-        this.editingIssue = issue
-        this.editModel = true
-      },
+    openEditor: function (issue) {
+      this.editingIssue = issue
+      this.editModel = true
+    },
 
-      addIssue: function () {
-        let issue = {
-          title: '',
-          tags: [],
-          context: '',
-          date: new Date().getTime()
-        }
-        this.allIssues.push(issue)
-        this.openEditor(issue)
-      },
+    addIssue: function () {
+      let issue = {
+        title: '',
+        tags: [],
+        context: '',
+        date: new Date().getTime()
+      }
+      this.allIssues.push(issue)
+      this.openEditor(issue)
+    },
 
-      /**
+    /**
        * Convert markdown context to html context
        * @param mdCtx
        * @returns
        */
-      md2html: function (mdCtx) {
-        return this.md.render(mdCtx)
-      }
+    md2html: function (mdCtx) {
+      return this.md.render(mdCtx)
+    }
+  },
+
+  watch: {
+    allTags: {
+      handler: function (val, oldVal) {
+        console.log('new tags')
+        console.log(val)
+        console.log('old tags')
+        console.log(oldVal)
+        this.storage.set('allTags', this.allTags)
+      },
+      deep: true
     },
 
-    watch: {
-      allTags: {
-        handler: function (val, oldVal) {
-          console.log('new tags')
-          console.log(val)
-          console.log('old tags')
-          console.log(oldVal)
-          this.storage.set('allTags', this.allTags)
-        },
-        deep: true
+    allIssues: {
+      handler: function (val, oldVal) {
+        console.log('new issues')
+        console.log(val)
+        console.log('old issues')
+        console.log(oldVal)
+        this.storage.set('allIssues', this.allIssues)
       },
-
-      allIssues: {
-        handler: function (val, oldVal) {
-          console.log('new issues')
-          console.log(val)
-          console.log('old issues')
-          console.log(oldVal)
-          this.storage.set('allIssues', this.allIssues)
-        },
-        deep: true
-      }
+      deep: true
     }
   }
+}
 </script>
 
 <style scoped>
