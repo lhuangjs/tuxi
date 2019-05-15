@@ -49,6 +49,8 @@ export default {
 
   data () {
     return {
+      // need to choose workspace and set git repository when first run
+      firstRun: true,
       filename: this.getDate(),
       markdownContext: '',
       htmlContext: null,
