@@ -9,7 +9,10 @@
       item-key="name"
     >
       <template v-slot:label="{item, open, selected}">
-        <v-btn flat class="ma-0 pa-0" @contextmenu="openMenu($event, item)">
+        <v-btn flat class="ma-0 pa-0"
+               @contextmenu="openMenu($event, item)"
+               @click="clickTreeNode(item)"
+        >
           <v-icon v-if="!item.type">
             {{open ? 'mdi-folder-open': 'mdi-folder'}}
           </v-icon>
@@ -91,7 +94,6 @@ export default {
         // init values
         self.settings = d
         self.open.push(self.settings.projectsDirName)
-        self.open.push('java11', 'ddd')
         // scan projects dir
         self.tree = self.getProjectsTree()
         console.log(self.tree)
@@ -147,6 +149,10 @@ export default {
 
   methods: {
 
+    /**
+       * Get projects directory tree
+       * @returns {{name: T, path, children: (*|Array)}[]}
+       */
     getProjectsTree: function () {
       return [{
         name: this.settings.paths.projectsPath.split(path.sep).pop(),
@@ -154,6 +160,19 @@ export default {
         children: this.scanDir(this.settings.paths.projectsPath)
       }]
     },
+
+    /**
+       * The event when tree node was clicked
+       * @param node
+       */
+    clickTreeNode: function (node) {
+      if (!node.type) {
+        this.open.push(node.name)
+      } else {
+        this.$emit('open-file', node)
+      }
+    },
+
     /**
        * Open menus when right click
        */
