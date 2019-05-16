@@ -13,17 +13,38 @@
         </template>
       </v-toolbar>
       <v-content>
-        <router-view></router-view>
+        <Settings v-if="firstRun" @finish-app-settings="firstRun = false"></Settings>
+        <router-view v-else></router-view>
       </v-content>
     </v-app>
   </div>
 </template>
 <script>
+
+import Settings from './components/Settings'
+import cons from './Constant'
+
 export default {
+
   name: 'App',
+
+  components: { Settings },
+
+  created () {
+    this.storage.getAsync(cons.DB_PATH.key, cons.DB_PATH.option)
+      .then(d => {
+        if (Object.keys(d).length === 0 && d.constructor === Object) {
+          this.firstRun = true
+        } else {
+          this.firstRun = false
+        }
+      })
+  },
 
   data () {
     return {
+      // first run ?
+      firstRun: true,
       menuItems: ['笔记', '问题面板', '计划'],
       menuRouters: ['/', '/Issues', '/plans']
     }
@@ -31,8 +52,9 @@ export default {
 }
 </script>
 <style>
- *{
-   margin: 0;
-   padding: 0;
- }
+  * {
+    margin: 0;
+    padding: 0;
+    text-transform: none !important;
+  }
 </style>
