@@ -42,8 +42,13 @@
         </v-container>
       </v-flex>
       <!--markdown previewer-->
-      <v-flex md6 v-if="openPreview">
-        <MDPreviewer :context="htmlContent" class="md-previewer"></MDPreviewer>
+      <v-flex md6 v-if="openPreview" ma-0 pa-0>
+        <v-container fluid fill-height ma-0 pa-0>
+          <v-layout colum>
+            <v-flex><MDPreviewer :context="htmlContent" class="md-previewer"></MDPreviewer>
+            </v-flex>
+          </v-layout>
+        </v-container>
       </v-flex>
     </v-layout>
   </v-container>
@@ -149,6 +154,5 @@ export default {
 
   .md-previewer {
     background-color: #fcfaf2;
-    height: 84vh;
   }
 </style>

@@ -212,6 +212,7 @@ export default {
         case '重命名':
           this.operation.key = '重命名'
           this.operation.label = '我到底该叫个啥'
+          this.operation.value = this.operation.obj.name
           this.showDialog = true
           break
         case '删除':
